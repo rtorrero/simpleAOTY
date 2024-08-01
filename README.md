@@ -11,16 +11,12 @@
       "password": "password123",
       "albums": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   }
-```
- ## 2. Get All Users
+  ```
+
+## 2. Get All Users
 
 - **Route**: GET /users
 - **Description**: Retrieves a list of all users in the database.
-
- ## 3. Update a User
-
--  **Route**: PUT /users/:id
--  **Description**: Updates the username, password, and album IDs for a specific user identified by their ID.
 ```json
 {
     "username": "updateduser",
@@ -28,7 +24,7 @@
     "albums": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 }
 ```
- ## 4. Add a Single Album
+ ## 3. Add a Single Album
 
 -  **Route**: POST /users/:id/albums
 -  **Description**: Adds a single album ID to the first available album field for a specific user identified by their ID.
@@ -38,7 +34,7 @@
 }
 ```
 
-## 5. Remove an Album by Value (DELETE /users/:id/albums/:album):
+## 4. Remove an Album by Value (DELETE /users/:id/albums/:album):
 
 - **Route**: DELETE /users/:id/albums/:album
 - **Description**: This endpoint removes an album by searching for the specified album ID value across all album fields (album1 to album10) for a user identified by their ID. If the album ID is found, the corresponding field is set to NULL.
@@ -46,7 +42,7 @@
         id: The ID of the user.
         album: The album ID value to remove.
 
-## 7. Remove a user by finding username. 
+## 5. Remove a user by finding username. 
     
 - **Route**: DELETE /users
 - **Request Body**
