@@ -84,6 +84,12 @@ app.post('/users/:id/albums', async (req, res) => {
         console.error("Error fetching album details from server.js:", error);
         return res.status(500).json({ error: 'Failed to fetch album details.' });
     }
+    //Double check :/
+    if (!albumData) {
+        console.error("Album data is NULL.");
+        return res.status(404).json({ error: 'Album not found.' });
+    }
+
 
     // Check if the album exists in the albums table
     const checkAlbumSql = `SELECT * FROM albums WHERE albumID = ?`;
