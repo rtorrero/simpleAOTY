@@ -1,6 +1,7 @@
 .env
 package.json
 node_modules/
+dbcopy/
 
 logs
 *.log

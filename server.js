@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./database');
@@ -6,6 +5,8 @@ require('dotenv').config(); // Load environment variables
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// Use metal api from my function
+const getAlbumDetails = require('./metalAPI.js');
 
 app.use(bodyParser.json());
 
@@ -29,7 +30,7 @@ app.post('/users', (req, res) => {
     // Ensure the SQL statement matches the number of values
     const sql = `INSERT INTO users (username, password, album1, album2, album3, album4, album5, album6, album7, album8, album9, album10) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    db.run(sql, valuesToInsert, function(err) {
+    db.run(sql, valuesToInsert, function (err) {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -56,7 +57,7 @@ app.put('/users/:id', (req, res) => {
     const placeholders = albums.map(() => '?').join(',');
     const sql = `UPDATE users SET username = ?, password = ?, album1 = ?, album2 = ?, album3 = ?, album4 = ?, album5 = ?, album6 = ?, album7 = ?, album8 = ?, album9 = ?, album10 = ? WHERE id = ?`;
 
-    db.run(sql, [username, password, ...albums, id], function(err) {
+    db.run(sql, [username, password, ...albums, id], function (err) {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -64,77 +65,122 @@ app.put('/users/:id', (req, res) => {
     });
 });
 
-// Add a single album to the next available field
-app.post('/users/:id/albums', (req, res) => {
+app.post('/users/:id/albums', async (req, res) => {
     const { id } = req.params;
     const { album } = req.body;
 
+    // Validate the album input
     if (typeof album !== 'number') {
         return res.status(400).json({ error: 'Album must be a number.' });
     }
 
+    // Get album detail from Album info
+    let albumData;
+    try {
+        albumData = await getAlbumDetails(album);
+        console.log("back to server.js");
+        console.log(albumData);
+    } catch (error) {
+        console.error("Error fetching album details from server.js:", error);
+        return res.status(500).json({ error: 'Failed to fetch album details.' });
+    }
+
     // Check if the album exists in the albums table
     const checkAlbumSql = `SELECT * FROM albums WHERE albumID = ?`;
-    
-    db.get(checkAlbumSql, [album], (err, existingAlbum) => {
-        if (err) {
-            return res.status(400).json({ error: err.message });
-        }
+    let existingAlbum;
 
-        // If the album does not exist, insert it into the albums table
-        if (!existingAlbum) {
-            const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverURL, linkURL) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            const { name, band, genre, releaseDate, coverURL, linkURL } = req.body; // Assuming these fields are sent in the request body
-
-            db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverURL, linkURL], function(err) {
+    try {
+        existingAlbum = await new Promise((resolve, reject) => {
+            db.get(checkAlbumSql, [album], (err, row) => {
                 if (err) {
-                    return res.status(400).json({ error: `Could not add album to albums table: ${err.message}` });
+                    return reject(err);
                 }
-                console.log(`Album added to albums table with ID: ${album}`);
+                resolve(row);
             });
-        }
-
-        // Now check the user's album fields
-        const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
-        
-        db.get(sql, [id], (err, row) => {
-            if (err) {
-                return res.status(400).json({ error: err.message });
-            }
-            if (!row) {
-                return res.status(404).json({ error: 'User not found.' });
-            }
-
-            // Check if the album already exists in any of the fields
-            for (let i = 1; i <= 10; i++) {
-                if (row[`album${i}`] === album) {
-                    return res.status(400).json({ error: 'Album already added.' });
-                }
-            }
-
-            // Find the first available album field
-            for (let i = 1; i <= 10; i++) {
-                if (row[`album${i}`] === null) {
-                    const updateSql = `UPDATE users SET album${i} = ? WHERE id = ?`;
-                    db.run(updateSql, [album, id], function(err) {
-                        if (err) {
-                            return res.status(400).json({ error: `Could not add album: ${err.message}` });
-                        }
-                        return res.json({ message: 'Album correctly added to user.' });
-                    });
-                    return; // Exit after adding the album
-                }
-            }
-
-            // If no available field was found
-            res.status(400).json({ error: 'Could not add album: No available album fields.' });
         });
-    });
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+
+    // If the album does not exist, insert it into the albums table
+    if (!existingAlbum) {
+        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverURL, linkURL) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        
+        // Update downloaded album info
+        const { name = "noname", band = "noband", genre = "nogenre",
+                releaseDate = "nodate", coverURL = "nocover",
+                linkURL ="nolink", type = "notype" } = albumData || {};
+
+        try {
+            await new Promise((resolve, reject) => {
+                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverURL, linkURL], function (err) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    console.log(`Album added to albums table with ID: ${album}`);
+                    resolve();
+                });
+            });
+        } catch (err) {
+            return res.status(400).json({ error: `Could not add album to albums table: ${err.message}` });
+        }
+    }
+
+    // Now check the user's album fields
+    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    let row;
+
+    try {
+        row = await new Promise((resolve, reject) => {
+            db.get(sql, [id], (err, row) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(row);
+            });
+        });
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+
+    if (!row) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Check if the album already exists in any of the fields
+    for (let i = 1; i <= 10; i++) {
+        if (row[`album${i}`] === album) {
+            return res.status(400).json({ error: 'Album already added.' });
+        }
+    }
+
+    // Find the first available album field
+    for (let i = 1; i <= 10; i++) {
+        if (row[`album${i}`] === null) {
+            const updateSql = `UPDATE users SET album${i} = ? WHERE id = ?`;
+            try {
+                await new Promise((resolve, reject) => {
+                    db.run(updateSql, [album, id], function (err) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve();
+                    });
+                });
+                return res.json({ message: 'Album correctly added to user.' });
+            } catch (err) {
+                return res.status(400).json({ error: `Could not add album: ${err.message}` });
+            }
+        }
+    }
+
+    // If no available field was found
+    res.status(400).json({ error: 'Could not add album: No available album fields.' });
 });
 
 
 
-// Remove an album by value
+// Remove an album from a user by value
 app.delete('/users/:id/albums/:album', (req, res) => {
     const { id, album } = req.params;
 
@@ -143,7 +189,7 @@ app.delete('/users/:id/albums/:album', (req, res) => {
     }
 
     const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
-    
+
     db.get(sql, [id], (err, row) => {
         if (err) {
             return res.status(400).json({ error: err.message });
@@ -158,7 +204,7 @@ app.delete('/users/:id/albums/:album', (req, res) => {
             if (row[`album${i}`] === parseInt(album)) {
                 found = true;
                 const updateSql = `UPDATE users SET album${i} = NULL WHERE id = ?`;
-                db.run(updateSql, [id], function(err) {
+                db.run(updateSql, [id], function (err) {
                     if (err) {
                         return res.status(400).json({ error: `Could not remove album: ${err.message}` });
                     }
@@ -185,7 +231,7 @@ app.delete('/users', (req, res) => {
 
     const sql = `DELETE FROM users WHERE username = ?`;
 
-    db.run(sql, [username], function(err) {
+    db.run(sql, [username], function (err) {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -214,6 +260,17 @@ app.get('/albums/:albumID', (req, res) => {
         }
         // Return the album information
         res.json(album);
+    });
+});
+
+// Route to get all albums
+app.get('/albums', (req, res) => {
+    db.all(`SELECT * FROM albums`, [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
     });
 });
 

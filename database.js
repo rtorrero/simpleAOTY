@@ -33,12 +33,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
         // Create albums table if it doesn't exist
         db.run(`CREATE TABLE IF NOT EXISTS albums (
             albumID INTEGER PRIMARY KEY NOT NULL UNIQUE,
-            name TEXT NOT NULL,
-            band TEXT NOT NULL,
-            genre TEXT NOT NULL,
-            releaseDate DATE NOT NULL,
+            name TEXT,
+            band TEXT,
+            genre TEXT,
+            releaseDate TEXT,
             coverURL TEXT,
-            linkURL TEXT
+            linkURL TEXT,
+            type TEXT
         )`, (err) => {
             if (err) {
                 console.error(err.message);
