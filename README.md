@@ -15,8 +15,9 @@
 
 ## 2. Get All Users
 
-- **Route**: GET /users
+- **Route**: `GET /users`
 - **Description**: Retrieves a list of all users in the database.
+- **Response**: The username, password and albums associated. 
 ```json
 {
     "username": "updateduser",
@@ -26,7 +27,7 @@
 ```
  ## 3. Add a Single Album
 
--  **Route**: POST /users/:id/albums
+-  **Route**: `POST /users/:id/albums`
 -  **Description**: Adds a single album ID to the first available album field for a specific user identified by their ID.
 ```json
 {
@@ -36,7 +37,7 @@
 
 ## 4. Remove an Album by Value (DELETE /users/:id/albums/:album):
 
-- **Route**: DELETE /users/:id/albums/:album
+- **Route**: `DELETE /users/:id/albums/:album`
 - **Description**: This endpoint removes an album by searching for the specified album ID value across all album fields (album1 to album10) for a user identified by their ID. If the album ID is found, the corresponding field is set to NULL.
 - **Parameters**:
         id: The ID of the user.
@@ -44,7 +45,7 @@
 
 ## 5. Remove a user by finding username. 
     
-- **Route**: DELETE /users
+- **Route**: `DELETE /users`
 - **Request Body**
 - **Description**: To remove a user, send a DELETE request to the /users endpoint with a JSON body containing the username of the user you wish to remove.
 Request Body
