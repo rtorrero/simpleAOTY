@@ -64,7 +64,7 @@ app.put('/users/:id', (req, res) => {
         res.json({ updatedID: id });
     });
 });
-
+// Add a album to a user (and add album to albums if needed)
 app.post('/users/:id/albums', async (req, res) => {
     const { id } = req.params;
     const { album } = req.body;
@@ -104,16 +104,17 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // If the album does not exist, insert it into the albums table
     if (!existingAlbum) {
-        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverURL, linkURL) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        
+        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverURL, linkURL, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
         // Update downloaded album info
+        // (some of this needs to be readed from bands, within request)
         const { name = "noname", band = "noband", genre = "nogenre",
-                releaseDate = "nodate", coverURL = "nocover",
-                linkURL ="nolink", type = "notype" } = albumData || {};
+            releaseDate = "nodate", coverUrl = "nocover",
+            linkUrl = "nolink", type = "notype" } = albumData || {};
 
         try {
             await new Promise((resolve, reject) => {
-                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverURL, linkURL], function (err) {
+                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverUrl, linkUrl, type], function (err) {
                     if (err) {
                         return reject(err);
                     }
@@ -271,6 +272,21 @@ app.get('/albums', (req, res) => {
             return;
         }
         res.json(rows);
+    });
+});
+
+// DELETE route to remove an album by albumID
+app.delete('/albums/:albumID', (req, res) => {
+    const albumID = req.params.albumID;
+
+    db.run(`DELETE FROM albums WHERE albumID = ?`, [albumID], function (err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ message: 'Album not found' });
+        }
+        res.status(200).json({ message: 'Album deleted successfully' });
     });
 });
 
