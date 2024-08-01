@@ -21,7 +21,7 @@
 
 -  **Route**: PUT /users/:id
 -  **Description**: Updates the username, password, and album IDs for a specific user identified by their ID.
-```json
+
 {
     "username": "updateduser",
     "password": "newpassword123",
@@ -32,7 +32,7 @@
 
 -  **Route**: POST /users/:id/albums
 -  **Description**: Adds a single album ID to the first available album field for a specific user identified by their ID.
-```json
+
 {
     "album": 11
 }
@@ -53,7 +53,6 @@
 - **Description**: To remove a user, send a DELETE request to the /users endpoint with a JSON body containing the username of the user you wish to remove.
 Request Body
 
-```json
 
 {
     "username": "username"
@@ -63,13 +62,13 @@ Request Body
 
 | HTTP Method | Route                     | Description                                      |
 |-------------|---------------------------|--------------------------------------------------|
-| POST        | `/users`                 | Create a new user.                              |
-| GET         | `/users`                 | Get all users.                                  |
-| PUT         | `/users/:id`             | Update a specific user.                         |
-| POST        | `/users/:id/albums`      | Add a single album to the next available field. |
-| PUT         | `/users/:id/albums/:albumIndex` | Modify a given album for a specific user. |
-| DELETE      | `/users/:id/albums/:album`      | Delete a given album for a specific user. |
-| DELETE      | `/users`                 | Delete a user by username. |
+| POST        | `/users`                  | Create a new user.                               |
+| GET         | `/users`                  | Get all users.                                   |
+| PUT         | `/users/:id`              | Update a specific user.                          |
+| POST        | `/users/:id/albums`       | Add a single album to the next available field.  |
+| PUT         | `/users/:id/albums/:album`| Modify a given album for a specific user.        |
+| DELETE      | `/users/:id/albums/:album`| Delete a given album for a specific user.        |
+| DELETE      | `/users`                  | Delete a user by username.                       |
 
 
 
