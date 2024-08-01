@@ -11,7 +11,7 @@
       "password": "password123",
       "albums": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   }
-
+```
  ## 2. Get All Users
 
 - **Route**: GET /users
@@ -27,7 +27,7 @@
     "password": "newpassword123",
     "albums": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 }
-
+```
  ## 4. Add a Single Album
 
 -  **Route**: POST /users/:id/albums
@@ -36,7 +36,7 @@
 {
     "album": 11
 }
-
+```
 
 ## 5. Remove an Album by Value (DELETE /users/:id/albums/:album):
 
@@ -56,7 +56,7 @@ Request Body
 {
     "username": "username"
 }
-
+``` 
 ## Summary of Routes
 
 | HTTP Method | Route                     | Description                                      |
