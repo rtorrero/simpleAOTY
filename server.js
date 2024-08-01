@@ -73,41 +73,65 @@ app.post('/users/:id/albums', (req, res) => {
         return res.status(400).json({ error: 'Album must be a number.' });
     }
 
-    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    // Check if the album exists in the albums table
+    const checkAlbumSql = `SELECT * FROM albums WHERE albumID = ?`;
     
-    db.get(sql, [id], (err, row) => {
+    db.get(checkAlbumSql, [album], (err, existingAlbum) => {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
-        if (!row) {
-            return res.status(404).json({ error: 'User not found.' });
+
+        // If the album does not exist, insert it into the albums table
+        if (!existingAlbum) {
+            const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverURL, linkURL) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            const { name, band, genre, releaseDate, coverURL, linkURL } = req.body; // Assuming these fields are sent in the request body
+
+            db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverURL, linkURL], function(err) {
+                if (err) {
+                    return res.status(400).json({ error: `Could not add album to albums table: ${err.message}` });
+                }
+                console.log(`Album added to albums table with ID: ${album}`);
+            });
         }
 
-        // Check if the album already exists in any of the fields
-        for (let i = 1; i <= 10; i++) {
-            if (row[`album${i}`] === album) {
-                return res.status(400).json({ error: 'Album already added.' });
+        // Now check the user's album fields
+        const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+        
+        db.get(sql, [id], (err, row) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
             }
-        }
-
-        // Find the first available album field
-        for (let i = 1; i <= 10; i++) {
-            if (row[`album${i}`] === null) {
-                const updateSql = `UPDATE users SET album${i} = ? WHERE id = ?`;
-                db.run(updateSql, [album, id], function(err) {
-                    if (err) {
-                        return res.status(400).json({ error: `Could not add album: ${err.message}` });
-                    }
-                    return res.json({ message: 'Correctly added' });
-                });
-                return; // Exit after adding the album
+            if (!row) {
+                return res.status(404).json({ error: 'User not found.' });
             }
-        }
 
-        // If no available field was found
-        res.status(400).json({ error: 'Could not add album: No available album fields.' });
+            // Check if the album already exists in any of the fields
+            for (let i = 1; i <= 10; i++) {
+                if (row[`album${i}`] === album) {
+                    return res.status(400).json({ error: 'Album already added.' });
+                }
+            }
+
+            // Find the first available album field
+            for (let i = 1; i <= 10; i++) {
+                if (row[`album${i}`] === null) {
+                    const updateSql = `UPDATE users SET album${i} = ? WHERE id = ?`;
+                    db.run(updateSql, [album, id], function(err) {
+                        if (err) {
+                            return res.status(400).json({ error: `Could not add album: ${err.message}` });
+                        }
+                        return res.json({ message: 'Album correctly added to user.' });
+                    });
+                    return; // Exit after adding the album
+                }
+            }
+
+            // If no available field was found
+            res.status(400).json({ error: 'Could not add album: No available album fields.' });
+        });
     });
 });
+
 
 
 // Remove an album by value
@@ -169,6 +193,27 @@ app.delete('/users', (req, res) => {
             return res.status(404).json({ error: 'User not found.' });
         }
         return res.json({ message: 'User successfully removed.' });
+    });
+});
+
+//Album related routes
+
+// Get album information by albumID
+app.get('/albums/:albumID', (req, res) => {
+    const { albumID } = req.params;
+
+    // SQL query to select album information by albumID
+    const sql = `SELECT * FROM albums WHERE albumID = ?`;
+
+    db.get(sql, [albumID], (err, album) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (!album) {
+            return res.status(404).json({ error: 'Album not found.' });
+        }
+        // Return the album information
+        res.json(album);
     });
 });
 

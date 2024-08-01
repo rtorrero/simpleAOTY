@@ -28,11 +28,19 @@
  ## 3. Add a Single Album
 
 -  **Route**: `POST /users/:id/albums`
--  **Description**: Adds a single album ID to the first available album field for a specific user identified by their ID.
+-  **Description**: Adds a single album ID to the first available album field for a specific user identified by their ID. Also adds this album to the album table with the following fields
+- **Request**:
 ```json
 {
-    "album": 11
+    "album": 1,
+    "name": "The Dark Side of the Moon",
+    "band": "Pink Floyd",
+    "genre": "Progressive Rock",
+    "releaseDate": "1973-03-01",
+    "coverURL": "https://example.com/cover.jpg",
+    "linkURL": "https://example.com/album"
 }
+
 ```
 
 ## 4. Remove an Album by Value (DELETE /users/:id/albums/:album):
@@ -46,9 +54,8 @@
 ## 5. Remove a user by finding username. 
     
 - **Route**: `DELETE /users`
-- **Request Body**
 - **Description**: To remove a user, send a DELETE request to the /users endpoint with a JSON body containing the username of the user you wish to remove.
-Request Body
+- **Request Body**
 ```json
 {
     "username": "username"

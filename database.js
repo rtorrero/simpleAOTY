@@ -8,6 +8,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error(err.message);
     } else {
         console.log('Connected to the SQLite database.');
+        
+        // Create users table if it doesn't exist
         db.run(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
@@ -27,7 +29,23 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 console.error(err.message);
             }
         });
+
+        // Create albums table if it doesn't exist
+        db.run(`CREATE TABLE IF NOT EXISTS albums (
+            albumID INTEGER PRIMARY KEY NOT NULL UNIQUE,
+            name TEXT NOT NULL,
+            band TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            releaseDate DATE NOT NULL,
+            coverURL TEXT,
+            linkURL TEXT
+        )`, (err) => {
+            if (err) {
+                console.error(err.message);
+            }
+        });
     }
 });
 
 module.exports = db;
+
