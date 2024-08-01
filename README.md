@@ -21,7 +21,7 @@
 
 -  **Route**: PUT /users/:id
 -  **Description**: Updates the username, password, and album IDs for a specific user identified by their ID.
-
+```json
 {
     "username": "updateduser",
     "password": "newpassword123",
@@ -32,7 +32,7 @@
 
 -  **Route**: POST /users/:id/albums
 -  **Description**: Adds a single album ID to the first available album field for a specific user identified by their ID.
-
+```json
 {
     "album": 11
 }
@@ -52,8 +52,7 @@
 - **Request Body**
 - **Description**: To remove a user, send a DELETE request to the /users endpoint with a JSON body containing the username of the user you wish to remove.
 Request Body
-
-
+```json
 {
     "username": "username"
 }
