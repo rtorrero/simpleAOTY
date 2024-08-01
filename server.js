@@ -1,0 +1,179 @@
+// server.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const db = require('./database');
+require('dotenv').config(); // Load environment variables
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(bodyParser.json());
+
+// Create a new user
+app.post('/users', (req, res) => {
+    const { username, password, albums } = req.body;
+
+    // Initialize album values to NULL
+    const albumValues = Array(10).fill(null); // Create an array with 10 NULL values
+
+    // If albums are provided, fill the first N album fields with the provided values
+    if (Array.isArray(albums) && albums.length > 0) {
+        for (let i = 0; i < Math.min(albums.length, 10); i++) {
+            albumValues[i] = albums[i];
+        }
+    }
+
+    // Combine the values to be inserted
+    const valuesToInsert = [username, password, ...albumValues];
+
+    // Ensure the SQL statement matches the number of values
+    const sql = `INSERT INTO users (username, password, album1, album2, album3, album4, album5, album6, album7, album8, album9, album10) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    db.run(sql, valuesToInsert, function(err) {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.status(201).json({ id: this.lastID });
+    });
+});
+
+
+
+// Get all users
+app.get('/users', (req, res) => {
+    db.all('SELECT * FROM users', [], (err, rows) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// Update a user (not needed?)
+app.put('/users/:id', (req, res) => {
+    const { id } = req.params;
+    const { username, password, albums } = req.body;
+    const placeholders = albums.map(() => '?').join(',');
+    const sql = `UPDATE users SET username = ?, password = ?, album1 = ?, album2 = ?, album3 = ?, album4 = ?, album5 = ?, album6 = ?, album7 = ?, album8 = ?, album9 = ?, album10 = ? WHERE id = ?`;
+
+    db.run(sql, [username, password, ...albums, id], function(err) {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.json({ updatedID: id });
+    });
+});
+
+// Add a single album to the next available field
+app.post('/users/:id/albums', (req, res) => {
+    const { id } = req.params;
+    const { album } = req.body;
+
+    if (typeof album !== 'number') {
+        return res.status(400).json({ error: 'Album must be a number.' });
+    }
+
+    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    
+    db.get(sql, [id], (err, row) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Check if the album already exists in any of the fields
+        for (let i = 1; i <= 10; i++) {
+            if (row[`album${i}`] === album) {
+                return res.status(400).json({ error: 'Album already added.' });
+            }
+        }
+
+        // Find the first available album field
+        for (let i = 1; i <= 10; i++) {
+            if (row[`album${i}`] === null) {
+                const updateSql = `UPDATE users SET album${i} = ? WHERE id = ?`;
+                db.run(updateSql, [album, id], function(err) {
+                    if (err) {
+                        return res.status(400).json({ error: `Could not add album: ${err.message}` });
+                    }
+                    return res.json({ message: 'Correctly added' });
+                });
+                return; // Exit after adding the album
+            }
+        }
+
+        // If no available field was found
+        res.status(400).json({ error: 'Could not add album: No available album fields.' });
+    });
+});
+
+
+// Remove an album by value
+app.delete('/users/:id/albums/:album', (req, res) => {
+    const { id, album } = req.params;
+
+    if (isNaN(album)) {
+        return res.status(400).json({ error: 'Album must be a number.' });
+    }
+
+    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    
+    db.get(sql, [id], (err, row) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Check each album field for the specified album value
+        let found = false;
+        for (let i = 1; i <= 10; i++) {
+            if (row[`album${i}`] === parseInt(album)) {
+                found = true;
+                const updateSql = `UPDATE users SET album${i} = NULL WHERE id = ?`;
+                db.run(updateSql, [id], function(err) {
+                    if (err) {
+                        return res.status(400).json({ error: `Could not remove album: ${err.message}` });
+                    }
+                    return res.json({ message: 'Album removed successfully' });
+                });
+                break; // Exit the loop after removing the album
+            }
+        }
+
+        // If the album was not found
+        if (!found) {
+            return res.status(400).json({ error: 'Album not found in the user\'s album fields.' });
+        }
+    });
+});
+
+// Route to remove a user by username
+app.delete('/users', (req, res) => {
+    const { username } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required.' });
+    }
+
+    const sql = `DELETE FROM users WHERE username = ?`;
+
+    db.run(sql, [username], function(err) {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        return res.json({ message: 'User successfully removed.' });
+    });
+});
+
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
