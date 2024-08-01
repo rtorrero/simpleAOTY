@@ -72,6 +72,6 @@
 | PUT         | `/users/:id/albums/:album`| Modify a given album for a specific user.        |
 | DELETE      | `/users/:id/albums/:album`| Delete a given album for a specific user.        |
 | DELETE      | `/users`                  | Delete a user by username.                       |
-
+| GET         | `/albums`                 | Get all albums.                                  |
 
 
