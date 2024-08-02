@@ -28,20 +28,22 @@ async function getAlbumDetails(albumId, bandId) {
         const bandData = await response2.json();
         console.log(bandData);
 
-        /* console.log(getAlbumLink(albumId)); */
+                // Extract the extra info from bands
+    
+        /* bandData = getBandDetails(bandId); */
+        const { name: band, country, genre, bandCoverUrl } = bandData;
+        console.log('band & genre' , band, genre)        
 
-        // Extract the extra info from bands
-    /*     bandID = 3540480710;
-        bandDetails = getBandDetails(bandId);
-        const { bandName, bandCountry, bandGenre, bandCoverUrl, bandLinkUrl } = bandDetails;
-        console.log(bandDetails); */
 
         // Return the extracted fields
         return {
             name,
             releaseDate,
             coverUrl,
-            type
+            type,
+            band,
+            genre
+
         };
     } catch (error) {
         console.error('Failed to fetch album details:', error);

@@ -66,7 +66,8 @@ app.put('/users/:id', (req, res) => {
 // Add a album to a user (and add album to albums if needed)
 app.post('/users/:id/albums', async (req, res) => {
     const { id } = req.params;
-    const { album } = req.body;
+    const { album, bandId } = req.body;
+    
 
     // Validate the album input
     if (typeof album !== 'number') {
@@ -75,7 +76,7 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // Get album detail from Album info
     let albumData;
-    const bandId = 3540326229; // for tests
+    
     try {
         albumData = await getAlbumDetails(album, bandId);
         console.log("back to server.js");
@@ -110,13 +111,13 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // If the album does not exist, insert it into the albums table
     if (!existingAlbum) {
-        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverURL, linkURL, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverUrl, linkUrl, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
         // Update downloaded album info
         // (some of this needs to be readed from bands, within request)
         const { name = "noname", band = "noband", genre = "nogenre",
             releaseDate = "nodate", coverUrl = "nocover",
-            linkUrl = "nolink", type = "notype" } = albumData || {};
+            linkUrl = "nolink", type = "notype",  } = albumData || {};
 
         try {
             await new Promise((resolve, reject) => {
