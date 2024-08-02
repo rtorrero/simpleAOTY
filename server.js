@@ -111,17 +111,18 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // If the album does not exist, insert it into the albums table
     if (!existingAlbum) {
-        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverUrl, linkUrl, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverUrl, linkURL, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
         // Update downloaded album info
         // (some of this needs to be readed from bands, within request)
         const { name = "noname", band = "noband", genre = "nogenre",
             releaseDate = "nodate", coverUrl = "nocover",
-            linkUrl = "nolink", type = "notype",  } = albumData || {};
-
+            linkURL = "nolink", type = "notype",  } = albumData || {};
+            console.log("In Server")
+            console.log(albumData)
         try {
             await new Promise((resolve, reject) => {
-                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverUrl, linkUrl, type], function (err) {
+                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverUrl, linkURL, type], function (err) {
                     if (err) {
                         return reject(err);
                     }

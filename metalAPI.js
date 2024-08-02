@@ -26,14 +26,18 @@ async function getAlbumDetails(albumId, bandId) {
         }
 
         const bandData = await response2.json();
-        console.log(bandData);
+        
 
                 // Extract the extra info from bands
     
         /* bandData = getBandDetails(bandId); */
-        const { name: band, country, genre, bandCoverUrl } = bandData;
-        console.log('band & genre' , band, genre)        
-
+        const { name: band, country, genre, bandCover: bandCoverUrl, albums } = bandData;
+        console.log("ALBUM OBj");
+        console.log(albums);
+        // Check for the albumId in the band object to find the link for the album.
+        const album = albums.find(album => album.id === String(albumId));
+        linkURL = album ? album.link : null; // Return the link or null if not found
+        
 
         // Return the extracted fields
         return {
@@ -42,7 +46,8 @@ async function getAlbumDetails(albumId, bandId) {
             coverUrl,
             type,
             band,
-            genre
+            genre,
+            linkURL
 
         };
     } catch (error) {
@@ -54,11 +59,6 @@ async function getAlbumDetails(albumId, bandId) {
 
 
 // Find Link from FIX THIS to map
-
-/* function getAlbumLink(album) {
-    const album = albums.find(album => album.id === album);
-    return album ? album.link : null;
-}  */
 
 
 module.exports = getAlbumDetails;
