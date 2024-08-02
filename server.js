@@ -5,6 +5,7 @@ require('dotenv').config(); // Load environment variables
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 // Use metal api from my function
 const getAlbumDetails = require('./metalAPI.js');
 
@@ -37,8 +38,6 @@ app.post('/users', (req, res) => {
         res.status(201).json({ id: this.lastID });
     });
 });
-
-
 
 // Get all users
 app.get('/users', (req, res) => {
@@ -76,8 +75,9 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // Get album detail from Album info
     let albumData;
+    const bandId = 3540326229; // for tests
     try {
-        albumData = await getAlbumDetails(album);
+        albumData = await getAlbumDetails(album, bandId);
         console.log("back to server.js");
         console.log(albumData);
     } catch (error) {
