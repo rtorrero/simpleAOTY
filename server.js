@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./database');
-require('dotenv').config(); // Load environment variables
+require('dotenv').config(); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,11 +9,30 @@ const PORT = process.env.PORT || 3000;
 // Use metal api from my function
 const getAlbumDetails = require('./metalAPI.js');
 
+// Add bcrypt lib
+const bcrypt = require('bcrypt'); 
+
+// Add ability to create tokens
+
+const jwt = require('jsonwebtoken'); 
+
 app.use(bodyParser.json());
 
-// Create a new user
-app.post('/users', (req, res) => {
+// Create a new user (with hashed pass)
+app.post('/users', async (req, res) => {
     const { username, password, albums } = req.body;
+
+    // Input validation
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required.' });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Initialize album values to NULL
     const albumValues = Array(10).fill(null); // Create an array with 10 NULL values
@@ -26,7 +45,7 @@ app.post('/users', (req, res) => {
     }
 
     // Combine the values to be inserted
-    const valuesToInsert = [username, password, ...albumValues];
+    const valuesToInsert = [username, hashedPassword, ...albumValues];
 
     // Ensure the SQL statement matches the number of values
     const sql = `INSERT INTO users (username, password, album1, album2, album3, album4, album5, album6, album7, album8, album9, album10) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -39,6 +58,7 @@ app.post('/users', (req, res) => {
     });
 });
 
+// User stuff ===
 // Get all users
 app.get('/users', (req, res) => {
     db.all('SELECT * FROM users', [], (err, rows) => {
@@ -46,6 +66,27 @@ app.get('/users', (req, res) => {
             return res.status(400).json({ error: err.message });
         }
         res.json(rows);
+    });
+});
+
+// Route to remove a user by username
+app.delete('/users', (req, res) => {
+    const { username } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required.' });
+    }
+
+    const sql = `DELETE FROM users WHERE username = ?`;
+
+    db.run(sql, [username], function (err) {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        return res.json({ message: 'User successfully removed.' });
     });
 });
 
@@ -63,6 +104,8 @@ app.put('/users/:id', (req, res) => {
         res.json({ updatedID: id });
     });
 });
+
+//User / Albums stuff
 // Add a album to a user (and add album to albums if needed)
 app.post('/users/:id/albums', async (req, res) => {
     const { id } = req.params;
@@ -187,8 +230,6 @@ app.post('/users/:id/albums', async (req, res) => {
     res.status(400).json({ error: 'Could not add album: No available album fields.' });
 });
 
-
-
 // Remove an album from a user by value
 app.delete('/users/:id/albums/:album', (req, res) => {
     const { id, album } = req.params;
@@ -230,29 +271,7 @@ app.delete('/users/:id/albums/:album', (req, res) => {
     });
 });
 
-// Route to remove a user by username
-app.delete('/users', (req, res) => {
-    const { username } = req.body;
-
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required.' });
-    }
-
-    const sql = `DELETE FROM users WHERE username = ?`;
-
-    db.run(sql, [username], function (err) {
-        if (err) {
-            return res.status(400).json({ error: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).json({ error: 'User not found.' });
-        }
-        return res.json({ message: 'User successfully removed.' });
-    });
-});
-
 //Album related routes
-
 // Get album information by albumID
 app.get('/albums/:albumID', (req, res) => {
     const { albumID } = req.params;
@@ -298,6 +317,34 @@ app.delete('/albums/:albumID', (req, res) => {
     });
 });
 
+// User login Stuff
+// Login check user/pass and return token
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required.' });
+    }
+
+    // Retrieve user from the database
+    const sql = `SELECT password FROM users WHERE username = ?`;
+    db.get(sql, [username], async (err, row) => {
+        if (err || !row) {
+            return res.status(401).json({ error: 'Invalid username or password.' });
+        }
+
+        // Compare the provided password with the hashed password
+        const isMatch = await bcrypt.compare(password, row.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid username or password.' });
+        }
+
+        // Generate a JWT token
+        const token = jwt.sign({ username }, 'your_secret_key', { expiresIn: '1h' }); // Use a strong secret key
+        res.json({ token });
+    });
+});
 
 // Start the server
 app.listen(PORT, () => {
