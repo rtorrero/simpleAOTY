@@ -107,6 +107,8 @@ app.put('/users/:id', (req, res) => {
 
 //User / Albums stuff
 // Add a album to a user (and add album to albums if needed)
+// Need to update number of "votes" or times added
+
 app.post('/users/:id/albums', async (req, res) => {
     const { id } = req.params;
     const { album, bandId } = req.body;

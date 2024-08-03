@@ -39,7 +39,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
             releaseDate TEXT,
             coverURL TEXT,
             linkURL TEXT,
-            type TEXT
+            type TEXT,
+            votes INTEGER
         )`, (err) => {
             if (err) {
                 console.error(err.message);
