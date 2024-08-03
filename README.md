@@ -73,5 +73,26 @@
 | DELETE      | `/users/:id/albums/:album`| Delete a given album for a specific user.        |
 | DELETE      | `/users`                  | Delete a user by username.                       |
 | GET         | `/albums`                 | Get all albums.                                  |
+| GET         | `/votes:username`         | Get all albums for a given user                  |
 
+
+**Misc.**
+
+Intended for use in app : 
+`POST /users`
+`POST /users/:id/albums`
+`DELETE /users/:id/albums`
+`GET /votes:username` 
+
+**Extra notes** : 
+
+Adding a album to a user adds the albumid to the first available album slot (empty), 
+also checks if it does not exist for the user. Then it attempts to add the album to the album
+table, if it does not exist it adds it and sets votes to 1, if it does already exist increases
+the vote count. If no available slot are found it does nothing. `POST /users/:id/albums` 
+
+Removing a album attempts to remove the given album from the user table (set the albumN = NULL)
+if the album exists it also removes 1 vote from the albums table if the votes count reaches 0 
+the full record will be deleted from albums aswell. If it does not find the album in the
+user list of albums it does nothing. `DELETE /users/:id/albums` 
 
