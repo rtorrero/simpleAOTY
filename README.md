@@ -73,6 +73,7 @@
 | DELETE      | `/users/:id/albums/:album`| Delete a given album for a specific user.        |
 | DELETE      | `/users`                  | Delete a user by username.                       |
 | GET         | `/albums`                 | Get all albums.                                  |
+| GET         | `/albums:album`           | Get all albums.                                  |
 | GET         | `/votes:username`         | Get all albums for a given user                  |
 
 
@@ -84,6 +85,7 @@ Intended for use in app :
 `POST /users/:id/albums`
 `DELETE /users/:id/albums`
 `GET /votes:username` 
+`GET /albums/:album`
 
 **Extra notes** : 
 
