@@ -79,6 +79,7 @@
 **Misc.**
 
 Intended for use in app : 
+
 `POST /users`
 `POST /users/:id/albums`
 `DELETE /users/:id/albums`
