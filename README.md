@@ -6,8 +6,10 @@
 
 Create a .env file that contains where you want the database file to be created, and a port where you want the API to be exposed. 
 
-```DB_PATH=./albums.db
-PORT=3001``` 
+```
+DB_PATH=./albums.db
+PORT=3001 
+```
 
 - **Run the server** 
 
