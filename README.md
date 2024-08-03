@@ -1,5 +1,21 @@
 # API Documentation
 
+## 0. Configure & start the server
+
+- **Environment variables** 
+
+Create a .env file that contains where you want the database file to be created, and a port where you want the API to be exposed. 
+
+`
+# .env
+DB_PATH=./albums.db
+PORT=3001`
+
+- **Run the server** 
+
+`node server.js` 
+
+
 ## 1. Create a New User
 
 - **Route**: `POST /users`
