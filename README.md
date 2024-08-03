@@ -2,7 +2,7 @@
 
 ## 0. Configure & start the server
 
-- **Environment variables** 
+- **Configuration variables** 
 
 Create a .env file that contains where you want the database file to be created, and a port where you want the API to be exposed. 
 
