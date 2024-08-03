@@ -251,6 +251,7 @@ app.post('/users/:id/albums', async (req, res) => {
 
 
 // Remove an album from a user by value (cancel vote)
+// also deletes the album from albums with 0 votes.
 app.delete('/users/:id/albums/:album', (req, res) => {
     const { id, album } = req.params;
 
@@ -275,6 +276,7 @@ app.delete('/users/:id/albums/:album', (req, res) => {
                 found = true;
                 const updateAlbumSql = `UPDATE users SET album${i} = NULL WHERE id = ?`;
                 const updateVotesSql = `UPDATE albums SET votes = votes - 1 WHERE albumID = ?`;
+                const deleteAlbumSql = `DELETE FROM albums WHERE albumID = ?`;
 
                 // First, remove the album from the user's albums
                 db.run(updateAlbumSql, [id], function (err) {
@@ -287,7 +289,25 @@ app.delete('/users/:id/albums/:album', (req, res) => {
                         if (err) {
                             return res.status(400).json({ error: `Could not update votes: ${err.message}` });
                         }
-                        return res.json({ message: 'Album removed successfully and vote decremented.' });
+
+                        // Check the current vote count for the album
+                        db.get(`SELECT votes FROM albums WHERE albumID = ?`, [album], (err, albumRow) => {
+                            if (err) {
+                                return res.status(400).json({ error: `Could not retrieve album votes: ${err.message}` });
+                            }
+
+                            // If the votes are now 0, delete the album
+                            if (albumRow && albumRow.votes === 0) {
+                                db.run(deleteAlbumSql, [album], function (err) {
+                                    if (err) {
+                                        return res.status(400).json({ error: `Could not delete album: ${err.message}` });
+                                    }
+                                    return res.json({ message: 'Album removed successfully and deleted from albums table.' });
+                                });
+                            } else {
+                                return res.json({ message: 'Album removed successfully, but still has votes.' });
+                            }
+                        });
                     });
                 });
                 break; // Exit the loop after removing the album
