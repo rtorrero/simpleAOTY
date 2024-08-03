@@ -250,7 +250,7 @@ app.post('/users/:id/albums', async (req, res) => {
 
 
 
-// Remove an album from a user by value
+// Remove an album from a user by value (cancel vote)
 app.delete('/users/:id/albums/:album', (req, res) => {
     const { id, album } = req.params;
 
@@ -273,12 +273,22 @@ app.delete('/users/:id/albums/:album', (req, res) => {
         for (let i = 1; i <= 10; i++) {
             if (row[`album${i}`] === parseInt(album)) {
                 found = true;
-                const updateSql = `UPDATE users SET album${i} = NULL WHERE id = ?`;
-                db.run(updateSql, [id], function (err) {
+                const updateAlbumSql = `UPDATE users SET album${i} = NULL WHERE id = ?`;
+                const updateVotesSql = `UPDATE albums SET votes = votes - 1 WHERE albumID = ?`;
+
+                // First, remove the album from the user's albums
+                db.run(updateAlbumSql, [id], function (err) {
                     if (err) {
                         return res.status(400).json({ error: `Could not remove album: ${err.message}` });
                     }
-                    return res.json({ message: 'Album removed successfully' });
+
+                    // Then, decrement the votes for the corresponding album
+                    db.run(updateVotesSql, [album], function (err) {
+                        if (err) {
+                            return res.status(400).json({ error: `Could not update votes: ${err.message}` });
+                        }
+                        return res.json({ message: 'Album removed successfully and vote decremented.' });
+                    });
                 });
                 break; // Exit the loop after removing the album
             }
@@ -290,6 +300,7 @@ app.delete('/users/:id/albums/:album', (req, res) => {
         }
     });
 });
+
 
 //Album related routes
 // Get album information by albumID
