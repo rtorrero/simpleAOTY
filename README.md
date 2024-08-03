@@ -103,13 +103,16 @@ Intended for use in app :
 `GET /votes:username` 
 `GET /albums/:album`
 
-> [!NOTES]
->Adding a album to a user adds the albumid to the first available album slot (empty), 
->also checks if it does not exist for the user. Then it attempts to add the album to the album
->table, if it does not exist it adds it and sets votes to 1, if it does already exist increases
->the vote count. If no available slot are found it does nothing. `POST /users/:id/albums` 
->Removing a album attempts to remove the given album from the user table (set the albumN = NULL)
->if the album exists it also removes 1 vote from the albums table if the votes count reaches 0 
->the full record will be deleted from albums aswell. If it does not find the album in the
->user list of albums it does nothing. `DELETE /users/:id/albums` 
+**Extra notes**
+
+**Adding a album** to a user adds the albumid to the first available album slot (empty), 
+also checks if it does not exist for the user. Then it attempts to add the album to the album
+table, if it does not exist it adds it and sets votes to 1, if it does already exist increases
+the vote count. If no available slot are found it does nothing. `POST /users/:id/albums` 
+
+**Removing a album** from a user attempts to remove the given album from the user table
+ (set the albumN = NULL) if the album exists it also removes 1 vote from the albums table 
+ if the votes count reaches 0 the full record will be deleted from albums aswell.
+ If it does not find the album in the user list of albums it does nothing.
+   `DELETE /users/:id/albums` 
 
