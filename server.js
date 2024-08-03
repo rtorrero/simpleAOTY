@@ -118,6 +118,34 @@ app.post('/users/:id/albums', async (req, res) => {
         return res.status(400).json({ error: 'Album must be a number.' });
     }
 
+    // Now check the user's album fields first
+    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    let row;
+
+    try {
+        row = await new Promise((resolve, reject) => {
+            db.get(sql, [id], (err, row) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(row);
+            });
+        });
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+
+    if (!row) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Check if the album already exists in any of the fields
+    for (let i = 1; i <= 10; i++) {
+        if (row[`album${i}`] === album) {
+            return res.status(400).json({ error: 'Album already added.' });
+        }
+    }
+
     // Get album detail from Album info
     let albumData;
 
@@ -196,34 +224,6 @@ app.post('/users/:id/albums', async (req, res) => {
         }
     }
 
-    // Now check the user's album fields
-    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
-    let row;
-
-    try {
-        row = await new Promise((resolve, reject) => {
-            db.get(sql, [id], (err, row) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(row);
-            });
-        });
-    } catch (err) {
-        return res.status(400).json({ error: err.message });
-    }
-
-    if (!row) {
-        return res.status(404).json({ error: 'User not found.' });
-    }
-
-    // Check if the album already exists in any of the fields
-    for (let i = 1; i <= 10; i++) {
-        if (row[`album${i}`] === album) {
-            return res.status(400).json({ error: 'Album already added.' });
-        }
-    }
-
     // Find the first available album field
     for (let i = 1; i <= 10; i++) {
         if (row[`album${i}`] === null) {
@@ -247,6 +247,7 @@ app.post('/users/:id/albums', async (req, res) => {
     // If no available field was found
     res.status(400).json({ error: 'Could not add album: No available album fields.' });
 });
+
 
 
 // Remove an album from a user by value
@@ -364,6 +365,34 @@ app.post('/login', async (req, res) => {
         res.json({ token });
     });
 });
+
+// Misc. (Specific routes)
+
+// Route to get album IDs for a given username
+app.get('/votes/:username', (req, res) => {
+    const username = req.params.username;
+
+    db.get(`SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE username = ?`, [username], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Create an object to hold the album IDs
+        const albumIds = {};
+        for (let i = 1; i <= 10; i++) {
+            const albumId = row[`album${i}`];
+            if (albumId !== null && albumId !== 0) {
+                albumIds[`album${i}`] = albumId;
+            }
+        }
+
+        res.json(albumIds);
+    });
+});
+
 
 // Start the server
 app.listen(PORT, () => {
