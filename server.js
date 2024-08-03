@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./database');
-require('dotenv').config(); 
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,11 +10,11 @@ const PORT = process.env.PORT || 3000;
 const getAlbumDetails = require('./metalAPI.js');
 
 // Add bcrypt lib
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcrypt');
 
 // Add ability to create tokens
 
-const jwt = require('jsonwebtoken'); 
+const jwt = require('jsonwebtoken');
 
 app.use(bodyParser.json());
 
@@ -112,7 +112,6 @@ app.put('/users/:id', (req, res) => {
 app.post('/users/:id/albums', async (req, res) => {
     const { id } = req.params;
     const { album, bandId } = req.body;
-    
 
     // Validate the album input
     if (typeof album !== 'number') {
@@ -121,7 +120,7 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // Get album detail from Album info
     let albumData;
-    
+
     try {
         albumData = await getAlbumDetails(album, bandId);
         console.log("back to server.js");
@@ -130,12 +129,12 @@ app.post('/users/:id/albums', async (req, res) => {
         console.error("Error fetching album details from server.js:", error);
         return res.status(500).json({ error: 'Failed to fetch album details.' });
     }
-    //Double check :/
+
+    // Double check :/
     if (!albumData) {
         console.error("Album data is NULL.");
         return res.status(404).json({ error: 'Album not found.' });
     }
-
 
     // Check if the album exists in the albums table
     const checkAlbumSql = `SELECT * FROM albums WHERE albumID = ?`;
@@ -156,18 +155,19 @@ app.post('/users/:id/albums', async (req, res) => {
 
     // If the album does not exist, insert it into the albums table
     if (!existingAlbum) {
-        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverUrl, linkURL, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverUrl, linkURL, type, votes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         // Update downloaded album info
-        // (some of this needs to be readed from bands, within request)
         const { name = "noname", band = "noband", genre = "nogenre",
             releaseDate = "nodate", coverUrl = "nocover",
-            linkURL = "nolink", type = "notype",  } = albumData || {};
-            console.log("In Server")
-            console.log(albumData)
+            linkURL = "nolink", type = "notype", } = albumData || {};
+
+        console.log("In Server");
+        console.log(albumData);
+
         try {
             await new Promise((resolve, reject) => {
-                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverUrl, linkURL, type], function (err) {
+                db.run(insertAlbumSql, [album, name, band, genre, releaseDate, coverUrl, linkURL, type, 1], function (err) {
                     if (err) {
                         return reject(err);
                     }
@@ -177,6 +177,22 @@ app.post('/users/:id/albums', async (req, res) => {
             });
         } catch (err) {
             return res.status(400).json({ error: `Could not add album to albums table: ${err.message}` });
+        }
+    } else {
+        // If the album already exists, increment the votes
+        const updateVotesSql = `UPDATE albums SET votes = votes + 1 WHERE albumID = ?`;
+        try {
+            await new Promise((resolve, reject) => {
+                db.run(updateVotesSql, [album], function (err) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    console.log(`Votes incremented for album ID: ${album}`);
+                    resolve();
+                });
+            });
+        } catch (err) {
+            return res.status(400).json({ error: `Could not update votes: ${err.message}` });
         }
     }
 
@@ -231,6 +247,7 @@ app.post('/users/:id/albums', async (req, res) => {
     // If no available field was found
     res.status(400).json({ error: 'Could not add album: No available album fields.' });
 });
+
 
 // Remove an album from a user by value
 app.delete('/users/:id/albums/:album', (req, res) => {
