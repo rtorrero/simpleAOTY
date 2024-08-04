@@ -91,6 +91,7 @@ PORT=3001
 | GET         | `/albums`                 | Get all albums.                                  |
 | GET         | `/albums:album`           | Get all albums.                                  |
 | GET         | `/votes:username`         | Get all albums for a given user                  |
+| GET         | `/freeslots:username`     | Check if user has available slots(AllInUse)      |
 
 
 **Misc.**
@@ -116,3 +117,5 @@ the vote count. If no available slot are found it does nothing. `POST /users/:id
  If it does not find the album in the user list of albums it does nothing.
    `DELETE /users/:id/albums` 
 
+**Checking available slots** for a user returns a object with a AllInUse value (true/false).
+    'GET /freeslots:username'
