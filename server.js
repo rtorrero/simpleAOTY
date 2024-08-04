@@ -181,6 +181,20 @@ app.post('/users/:username/albums', async (req, res) => {
         return res.status(400).json({ error: err.message });
     }
 
+    // Find the first available album field
+    let availableField = null;
+    for (let i = 1; i <= 10; i++) {
+        if (row[`album${i}`] === null) {
+            availableField = i;
+            break;
+        }
+    }
+
+    // If no available field was found
+    if (availableField === null) {
+        return res.status(400).json({ error: 'Could not add album: No available album fields.' });
+    }
+
     // If the album does not exist, insert it into the albums table
     if (!existingAlbum) {
         const insertAlbumSql = `INSERT INTO albums (albumID, name, band, genre, releaseDate, coverUrl, linkURL, type, votes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -224,29 +238,23 @@ app.post('/users/:username/albums', async (req, res) => {
         }
     }
 
-    // Find the first available album field
-    for (let i = 1; i <= 10; i++) {
-        if (row[`album${i}`] === null) {
-            const updateSql = `UPDATE users SET album${i} = ? WHERE username = ?`; // Change id to username
-            try {
-                await new Promise((resolve, reject) => {
-                    db.run(updateSql, [album, username], function (err) { // Change id to username
-                        if (err) {
-                            return reject(err);
-                        }
-                        resolve();
-                    });
-                });
-                return res.json({ message: 'Album correctly added to user.' });
-            } catch (err) {
-                return res.status(400).json({ error: `Could not add album: ${err.message}` });
-            }
-        }
+    // Update the user's album field
+    const updateSql = `UPDATE users SET album${availableField} = ? WHERE username = ?`; // Change id to username
+    try {
+        await new Promise((resolve, reject) => {
+            db.run(updateSql, [album, username], function (err) { // Change id to username
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            });
+        });
+        return res.json({ message: 'Album correctly added to user.' });
+    } catch (err) {
+        return res.status(400).json({ error: `Could not add album: ${err.message}` });
     }
-
-    // If no available field was found
-    res.status(400).json({ error: 'Could not add album: No available album fields.' });
 });
+
 
 
 
