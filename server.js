@@ -432,6 +432,42 @@ app.get('/votes/:username', (req, res) => {
     });
 });
 
+// Check if a user has free slots
+app.get('/freeslots/:username', (req, res) => {
+    const username = req.params.username;
+
+    const query = `
+        SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10
+        FROM users
+        WHERE username = ?`;
+
+    db.get(query, [username], (err, row) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        if (!row) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const albums = [
+            row.album1,
+            row.album2,
+            row.album3,
+            row.album4,
+            row.album5,
+            row.album6,
+            row.album7,
+            row.album8,
+            row.album9,
+            row.album10
+        ];
+
+        const allInUse = albums.every(album => album !== 0 && album !== null);
+        res.json({ allInUse });
+    });
+});
 
 // Start the server
 app.listen(PORT, () => {
