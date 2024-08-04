@@ -109,8 +109,8 @@ app.put('/users/:id', (req, res) => {
 // Add a album to a user (and add album to albums if needed)
 // Need to update number of "votes" or times added
 
-app.post('/users/:id/albums', async (req, res) => {
-    const { id } = req.params;
+app.post('/users/:username/albums', async (req, res) => {
+    const { username } = req.params; // Change from id to username
     const { album, bandId } = req.body;
 
     // Validate the album input
@@ -119,12 +119,12 @@ app.post('/users/:id/albums', async (req, res) => {
     }
 
     // Now check the user's album fields first
-    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE username = ?`; // Change id to username
     let row;
 
     try {
         row = await new Promise((resolve, reject) => {
-            db.get(sql, [id], (err, row) => {
+            db.get(sql, [username], (err, row) => {
                 if (err) {
                     return reject(err);
                 }
@@ -227,10 +227,10 @@ app.post('/users/:id/albums', async (req, res) => {
     // Find the first available album field
     for (let i = 1; i <= 10; i++) {
         if (row[`album${i}`] === null) {
-            const updateSql = `UPDATE users SET album${i} = ? WHERE id = ?`;
+            const updateSql = `UPDATE users SET album${i} = ? WHERE username = ?`; // Change id to username
             try {
                 await new Promise((resolve, reject) => {
-                    db.run(updateSql, [album, id], function (err) {
+                    db.run(updateSql, [album, username], function (err) { // Change id to username
                         if (err) {
                             return reject(err);
                         }

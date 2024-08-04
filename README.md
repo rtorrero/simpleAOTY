@@ -84,7 +84,7 @@ PORT=3001
 | POST        | `/users`                  | Create a new user.                               |
 | GET         | `/users`                  | Get all users.                                   |
 | PUT         | `/users/:id`              | Update a specific user.                          |
-| POST        | `/users/:id/albums`       | Add a single album to the next available field.  |
+| POST        | `/users/:username/albums` | Add a single album to the next available field.  |
 | PUT         | `/users/:id/albums/:album`| Modify a given album for a specific user.        |
 | DELETE      | `/users/:id/albums/:album`| Delete a given album for a specific user.        |
 | DELETE      | `/users`                  | Delete a user by username.                       |
@@ -98,7 +98,7 @@ PORT=3001
 Intended for use in app : 
 
 `POST /users`
-`POST /users/:id/albums`
+`POST /users/:username/albums`
 `DELETE /users/:id/albums`
 `GET /votes:username` 
 `GET /albums/:album`
