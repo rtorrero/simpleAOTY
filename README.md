@@ -86,7 +86,7 @@ PORT=3001
 | PUT         | `/users/:id`              | Update a specific user.                          |
 | POST        | `/users/:username/albums` | Add a single album to the next available field.  |
 | PUT         | `/users/:id/albums/:album`| Modify a given album for a specific user.        |
-| DELETE      | `/users/:id/albums/:album`| Delete a given album for a specific user.        |
+| DELETE      | `/users/:username/albums/:album`| Delete a given album for a specific user.        |
 | DELETE      | `/users`                  | Delete a user by username.                       |
 | GET         | `/albums`                 | Get all albums.                                  |
 | GET         | `/albums:album`           | Get all albums.                                  |

@@ -260,16 +260,16 @@ app.post('/users/:username/albums', async (req, res) => {
 
 // Remove an album from a user by value (cancel vote)
 // also deletes the album from albums with 0 votes.
-app.delete('/users/:id/albums/:album', (req, res) => {
-    const { id, album } = req.params;
+app.delete('/users/:username/albums/:album', (req, res) => {
+    const { username, album } = req.params;
 
     if (isNaN(album)) {
         return res.status(400).json({ error: 'Album must be a number.' });
     }
 
-    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE id = ?`;
+    const sql = `SELECT album1, album2, album3, album4, album5, album6, album7, album8, album9, album10 FROM users WHERE username = ?`;
 
-    db.get(sql, [id], (err, row) => {
+    db.get(sql, [username], (err, row) => {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
@@ -282,12 +282,12 @@ app.delete('/users/:id/albums/:album', (req, res) => {
         for (let i = 1; i <= 10; i++) {
             if (row[`album${i}`] === parseInt(album)) {
                 found = true;
-                const updateAlbumSql = `UPDATE users SET album${i} = NULL WHERE id = ?`;
+                const updateAlbumSql = `UPDATE users SET album${i} = NULL WHERE username = ?`;
                 const updateVotesSql = `UPDATE albums SET votes = votes - 1 WHERE albumID = ?`;
                 const deleteAlbumSql = `DELETE FROM albums WHERE albumID = ?`;
 
                 // First, remove the album from the user's albums
-                db.run(updateAlbumSql, [id], function (err) {
+                db.run(updateAlbumSql, [username], function (err) {
                     if (err) {
                         return res.status(400).json({ error: `Could not remove album: ${err.message}` });
                     }
