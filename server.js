@@ -18,6 +18,10 @@ const jwt = require('jsonwebtoken');
 
 app.use(bodyParser.json());
 
+// Control auth.
+
+const authenticateToken = require('./middleware');
+
 // Create a new user (with hashed pass)
 app.post('/users', async (req, res) => {
     const { username, password, albums } = req.body;
@@ -107,9 +111,9 @@ app.put('/users/:id', (req, res) => {
 
 //User / Albums stuff
 // Add a album to a user (and add album to albums if needed)
-// Need to update number of "votes" or times added
 
-app.post('/users/:username/albums', async (req, res) => {
+
+app.post('/users/:username/albums',authenticateToken, async (req, res) => {
     const { username } = req.params; // Change from id to username
     const { album, bandId } = req.body;
 
