@@ -264,7 +264,7 @@ app.post('/users/:username/albums',authenticateToken, async (req, res) => {
 
 // Remove an album from a user by value (cancel vote)
 // also deletes the album from albums with 0 votes.
-app.delete('/users/:username/albums/:album', (req, res) => {
+app.delete('/users/:username/albums/:album',authenticateToken, (req, res) => {
     const { username, album } = req.params;
 
     if (isNaN(album)) {
