@@ -4,7 +4,7 @@ const db = require('./database');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Use metal api from my function
 const getAlbumDetails = require('./metalAPI.js');
