@@ -400,7 +400,7 @@ app.post('/login', async (req, res) => {
         }
 
         // Generate a JWT token
-        const token = jwt.sign({ username }, 'your_secret_key', { expiresIn: '1h' }); // Use a strong secret key
+        const token = jwt.sign({ username }, process.env.SECRET, { expiresIn: '1h' }); // Use a strong secret key
         res.json({ token });
     });
 });

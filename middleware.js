@@ -6,7 +6,7 @@ const authenticateToken = (req, res, next) => {
         return res.sendStatus(401); // Unauthorized
     }
 
-    jwt.verify(token, 'your_secret_key', (err, user) => {
+    jwt.verify(token, process.env.SECRET, (err, user) => {
         if (err) {
             return res.sendStatus(403); // Forbidden
         }
