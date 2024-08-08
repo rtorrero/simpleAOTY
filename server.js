@@ -495,29 +495,46 @@ app.post('/generate-link', (req, res) => {
 // Read token to allow account creation.
 
 // Handle account creation from valid links
-app.post('/create-account', (req, res) => {
+app.post('/create-account', async (req, res) => {
     const token = req.query.token; 
     const { username, password } = req.body; 
-
-    db.get("SELECT * FROM tokens WHERE token = ? AND used = 0", [token], (err, row) => {
+    
+    db.get("SELECT * FROM tokens WHERE token = ? AND used = 0", [token], async (err, row) => {
         if (err || !row) {
             return res.status(400).send('Invalid or already used token.');
         }
 
-        // accunt logic here
-   
-        // Token used
-        db.run("UPDATE tokens SET used = 1 WHERE token = ?", [token], (err) => {
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required.' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const valuesToInsert = [username, hashedPassword];
+        const sql = `INSERT INTO users (username, password) VALUES (?, ?)`;
+
+        db.run(sql, valuesToInsert, function (err) {
             if (err) {
-                return res.status(500).send('Error marking token as used');
+                return res.status(400).json({ error: err.message });
             }
-            res.send('Token correct');
+
+            // Token used
+            db.run("UPDATE tokens SET used = 1 WHERE token = ?", [token], (err) => {
+                if (err) {
+                    return res.status(500).send('Error marking token as used');
+                }
+                res.status(201).json({ id: this.lastID, message: 'Account created successfully.' });
+            });
         });
     });
 });
 
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+
+    // Start the server
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
