@@ -22,6 +22,10 @@ app.use(bodyParser.json());
 
 const authenticateToken = require('./middleware');
 
+// Encrypt tokens for links. 
+
+const crypto = require('crypto');
+
 // Create a new user (with hashed pass)
 app.post('/users', async (req, res) => {
     const { username, password, albums } = req.body;
@@ -113,7 +117,7 @@ app.put('/users/:id', (req, res) => {
 // Add a album to a user (and add album to albums if needed)
 
 
-app.post('/users/:username/albums',authenticateToken, async (req, res) => {
+app.post('/users/:username/albums', authenticateToken, async (req, res) => {
     const { username } = req.params; // Change from id to username
     const { album, bandId } = req.body;
 
@@ -264,7 +268,7 @@ app.post('/users/:username/albums',authenticateToken, async (req, res) => {
 
 // Remove an album from a user by value (cancel vote)
 // also deletes the album from albums with 0 votes.
-app.delete('/users/:username/albums/:album',authenticateToken, (req, res) => {
+app.delete('/users/:username/albums/:album', authenticateToken, (req, res) => {
     const { username, album } = req.params;
 
     if (isNaN(album)) {
@@ -472,6 +476,46 @@ app.get('/freeslots/:username', (req, res) => {
         res.json({ allInUse });
     });
 });
+
+// One time tokens to create accounts.
+// Create a link with a token. 
+
+app.post('/generate-link', (req, res) => {
+    const token = crypto.randomBytes(16).toString('hex');
+    db.run("INSERT INTO tokens (token) VALUES (?)", [token], function (err) {
+        if (err) {
+            return res.status(500).json({ error: 'Error generating link' });
+        }
+        const link = `/create-account?token=${token}`;
+        res.json({ link });
+    });
+});
+
+
+// Read token to allow account creation.
+
+// Handle account creation from valid links
+app.post('/create-account', (req, res) => {
+    const token = req.query.token; 
+    const { username, password } = req.body; 
+
+    db.get("SELECT * FROM tokens WHERE token = ? AND used = 0", [token], (err, row) => {
+        if (err || !row) {
+            return res.status(400).send('Invalid or already used token.');
+        }
+
+        // accunt logic here
+   
+        // Token used
+        db.run("UPDATE tokens SET used = 1 WHERE token = ?", [token], (err) => {
+            if (err) {
+                return res.status(500).send('Error marking token as used');
+            }
+            res.send('Token correct');
+        });
+    });
+});
+
 
 // Start the server
 app.listen(PORT, () => {
