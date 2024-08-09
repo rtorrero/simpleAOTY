@@ -114,8 +114,9 @@ User can also be created by using the one time links :
 | GET         | `/votes:username`         | Get all albums for a given user                  |
 | GET         | `/freeslots:username`     | Check if user has available slots(AllInUse)      |
 | POST        | `/generate-link:amount`   | Generate a one use link to create a account      |
+| POST        | `/create-account?token={token}`| Create user if valid token exists           |
 
-
+`/create-account?token={token}`
 **Misc.**
 
 Intended for use in app : 
