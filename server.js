@@ -486,7 +486,7 @@ app.post('/generate-link', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Error generating link' });
         }
-        const link = `/create-account?token=${token}`;
+        const link = `${process.env.FRURL}/signup?token=${token}`;
         res.json({ link });
     });
 });
