@@ -28,6 +28,20 @@ PORT=3001
       "albums": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   }
   ```
+User can also be created by using the one time links :
+
+
+- **Route**: `POST /create-account?token={token}`
+- **Description**: Creates a new user with a username, password, and an array of album IDs, only if the passed `token'is valid and not used. 
+- **Request Body**:
+  ```json
+  {
+      "username": "testuser",
+      "password": "password123",
+      "albums": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+  ```
+
 
 ## 2. Get All Users
 
@@ -77,6 +91,13 @@ PORT=3001
     "username": "username"
 }
 ``` 
+## 6. Create one use links to create accounts 
+
+- **Route**: `POST /generate-link/:amount`
+- **Description**: Used to create one time use links, by default creates one link, if a amount is passed it generates that amount of links. 
+
+
+
 ## Summary of Routes
 
 | HTTP Method | Route                     | Description                                      |
@@ -86,12 +107,13 @@ PORT=3001
 | PUT         | `/users/:id`              | Update a specific user.                          |
 | POST        | `/users/:username/albums` | Add a single album to the next available field.  |
 | PUT         | `/users/:id/albums/:album`| Modify a given album for a specific user.        |
-| DELETE      | `/users/:username/albums/:album`| Delete a given album for a specific user.        |
+| DELETE      | `/users/:username/albums/:album`| Delete a given album for a specific user.  |
 | DELETE      | `/users`                  | Delete a user by username.                       |
 | GET         | `/albums`                 | Get all albums.                                  |
 | GET         | `/albums:album`           | Get all albums.                                  |
 | GET         | `/votes:username`         | Get all albums for a given user                  |
 | GET         | `/freeslots:username`     | Check if user has available slots(AllInUse)      |
+| POST        | `/generate-link:amount`   | Generate a one use link to create a account      |
 
 
 **Misc.**
