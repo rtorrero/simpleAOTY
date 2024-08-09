@@ -480,15 +480,33 @@ app.get('/freeslots/:username', (req, res) => {
 // One time tokens to create accounts.
 // Create a link with a token. 
 
-app.post('/generate-link', (req, res) => {
-    const token = crypto.randomBytes(16).toString('hex');
-    db.run("INSERT INTO tokens (token) VALUES (?)", [token], function (err) {
-        if (err) {
-            return res.status(500).json({ error: 'Error generating link' });
-        }
-        const link = `${process.env.FRURL}/signup?token=${token}`;
-        res.json({ link });
-    });
+app.post('/generate-link/:amount?', async (req, res) => {
+    const amount = parseInt(req.params.amount) || 1;
+    const links = [];
+
+    const generateLink = () => {
+        return new Promise((resolve, reject) => {
+            const token = crypto.randomBytes(16).toString('hex');
+            db.run("INSERT INTO tokens (token) VALUES (?)", [token], function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                const link = `${process.env.FRURL}/signup?token=${token}`;
+                links.push(link);
+                resolve();
+            });
+        });
+    };
+
+    try {
+        // Create an array of promises
+        const tasks = Array.from({ length: amount }, () => generateLink());
+        // Wait for all promises to resolve
+        await Promise.all(tasks);
+        res.json({ links });
+    } catch (err) {
+        res.status(500).json({ error: 'Error generating links' });
+    }
 });
 
 
