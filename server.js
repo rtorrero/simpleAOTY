@@ -548,7 +548,7 @@ app.post('/create-account', async (req, res) => {
     });
 });
 
-// Get a list of tokens: Used, Active or All
+// Get a list of link-tokens: Used, Active or All
 app.get('/tokens/:username/:status', authenticateAdminToken, (req, res) => {
     const { status } = req.params; 
 
@@ -568,9 +568,19 @@ app.get('/tokens/:username/:status', authenticateAdminToken, (req, res) => {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json(rows);
+
+        // Map over the rows to create the desired link format
+        const links = rows.map(row => {
+            return {
+                
+                link: `${process.env.FRURL}/signup?token=${row.token}`
+            };
+        });
+
+        res.json(links);
     });
 });
+
 
 
 
