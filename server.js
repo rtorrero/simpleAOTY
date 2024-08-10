@@ -20,7 +20,8 @@ app.use(bodyParser.json());
 
 // Control auth.
 
-const authenticateToken = require('./middleware');
+const { authenticateAdminToken, authenticateToken } = require('./middleware');
+
 
 // Encrypt tokens for links. 
 
@@ -389,29 +390,26 @@ app.delete('/albums/:albumID', (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    // Validate input
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required.' });
     }
-
-    // Retrieve user from the database
-    const sql = `SELECT password FROM users WHERE username = ?`;
+    
+    const sql = `SELECT password, role FROM users WHERE username = ?`;
     db.get(sql, [username], async (err, row) => {
         if (err || !row) {
             return res.status(401).json({ error: 'Invalid username or password.' });
         }
 
-        // Compare the provided password with the hashed password
         const isMatch = await bcrypt.compare(password, row.password);
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid username or password.' });
         }
-
-        // Generate a JWT token
-        const token = jwt.sign({ username }, process.env.SECRET, { expiresIn: '1h' }); // Use a strong secret key
+        
+        const token = jwt.sign({ username, role: row.role }, process.env.SECRET, { expiresIn: '1h' }); // Use a strong secret key
         res.json({ token });
     });
 });
+
 
 // Misc. (Specific routes)
 
@@ -480,7 +478,7 @@ app.get('/freeslots/:username', (req, res) => {
 // One time tokens to create accounts.
 // Create a link with a token. 
 
-app.post('/generate-link/:amount?', async (req, res) => {
+app.post('/generate-link/:username/:amount?', authenticateAdminToken, async (req, res) => {
     const amount = parseInt(req.params.amount) || 1;
     const links = [];
 
@@ -514,9 +512,9 @@ app.post('/generate-link/:amount?', async (req, res) => {
 
 // Handle account creation from valid links
 app.post('/create-account', async (req, res) => {
-    const token = req.query.token; 
-    const { username, password } = req.body; 
-    
+    const token = req.query.token;
+    const { username, password } = req.body;
+
     db.get("SELECT * FROM tokens WHERE token = ? AND used = 0", [token], async (err, row) => {
         if (err || !row) {
             return res.status(400).send('Invalid or already used token.');
@@ -552,7 +550,7 @@ app.post('/create-account', async (req, res) => {
 
 
 
-    // Start the server
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-    });
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
