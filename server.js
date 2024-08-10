@@ -510,7 +510,6 @@ app.post('/generate-link/:username/:amount?', authenticateAdminToken, async (req
 
 
 // Read token to allow account creation.
-
 // Handle account creation from valid links
 app.post('/create-account', async (req, res) => {
     const token = req.query.token;
@@ -548,6 +547,31 @@ app.post('/create-account', async (req, res) => {
         });
     });
 });
+
+// Get a list of tokens: Used, Active or All
+app.get('/tokens/:username/:status', authenticateAdminToken, (req, res) => {
+    const { status } = req.params; 
+
+    let query = 'SELECT * FROM tokens';
+    const params = [];
+
+    if (status === 'Used') {
+        query += ' WHERE used = 1';
+    } else if (status === 'Active') {
+        query += ' WHERE used = 0';
+    } else if (status !== 'All') {
+        return res.status(400).json({ error: 'Invalid status parameter. Use "All", "Used", or "Active".' });
+    }
+
+    db.all(query, params, (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
+
 
 
 

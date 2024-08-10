@@ -115,6 +115,8 @@ User can also be created by using the one time links :
 | GET         | `/freeslots:username`     | Check if user has available slots(AllInUse)      |
 | POST        | `/generate-link:amount`   | Generate a one use link to create a account      |
 | POST        | `/create-account?token={token}`| Create user if valid token exists           |
+| GET         | `/tokens/:username/:status`| List All, Used or Active tokens                   |
+
 
 `/create-account?token={token}`
 **Misc.**
@@ -126,6 +128,12 @@ Intended for use in app :
 `DELETE /users/:id/albums`
 `GET /votes:username` 
 `GET /albums/:album`
+`GET /votes:username`
+`GET /freeslots:username`
+`POST /generate-link:amount`
+`POST /create-account?token={token}`
+`GET /tokens/:username/:status`
+
 
 **Extra notes**
 
