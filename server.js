@@ -386,7 +386,7 @@ app.delete('/albums/:albumID', (req, res) => {
 });
 
 // User login Stuff
-// Login check user/pass and return token
+// Login check user/pass and return token and role (for display purposses)
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -406,9 +406,10 @@ app.post('/login', async (req, res) => {
         }
         
         const token = jwt.sign({ username, role: row.role }, process.env.SECRET, { expiresIn: '1h' }); // Use a strong secret key
-        res.json({ token });
+        res.json({ token, role: row.role }); 
     });
 });
+
 
 
 // Misc. (Specific routes)
