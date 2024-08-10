@@ -572,8 +572,9 @@ app.get('/tokens/:username/:status', authenticateAdminToken, (req, res) => {
         // Map over the rows to create the desired link format
         const links = rows.map(row => {
             return {
-                
-                link: `${process.env.FRURL}/signup?token=${row.token}`
+                used: row.used,
+                token: `${process.env.FRURL}/signup?token=${row.token}`,
+                createdAt: row.createdAt
             };
         });
 
