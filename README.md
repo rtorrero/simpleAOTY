@@ -104,7 +104,7 @@ User can also be created by using the one time links :
 |-------------|---------------------------|--------------------------------------------------|
 | POST        | `/users`                  | Create a new user.                               |
 | GET         | `/users`                  | Get all users.                                   |
-| PUT         | `/users/:id`              | Update a specific user.                          |
+| PUT         | `/users/:username`        | Update a specific users role.                    |
 | POST        | `/users/:username/albums` | Add a single album to the next available field.  |
 | PUT         | `/users/:id/albums/:album`| Modify a given album for a specific user.        |
 | DELETE      | `/users/:username/albums/:album`| Delete a given album for a specific user.  |
@@ -115,7 +115,7 @@ User can also be created by using the one time links :
 | GET         | `/freeslots:username`     | Check if user has available slots(AllInUse)      |
 | POST        | `/generate-link:amount`   | Generate a one use link to create a account      |
 | POST        | `/create-account?token={token}`| Create user if valid token exists           |
-| GET         | `/tokens/:username/:status`| List All, Used or Active tokens                   |
+| GET         | `/tokens/:username/:status`| List All, Used or Active tokens                 |
 
 
 `/create-account?token={token}`
@@ -133,6 +133,7 @@ Intended for use in app :
 `POST /generate-link:amount`
 `POST /create-account?token={token}`
 `GET /tokens/:username/:status`
+`PUT /users/:username`
 
 
 **Extra notes**
@@ -150,3 +151,7 @@ the vote count. If no available slot are found it does nothing. `POST /users/:id
 
 **Checking available slots** for a user returns a object with a AllInUse value (true/false).
     'GET /freeslots:username'
+
+**Control Auth as admin** 
+    Different routes : Eg `PUT /users/:username`  username is the user --changing-- the value
+    the role and user --to be changed-- will be in the body.

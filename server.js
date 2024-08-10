@@ -99,18 +99,21 @@ app.delete('/users', (req, res) => {
     });
 });
 
-// Update a user (not needed?)
-app.put('/users/:id', (req, res) => {
-    const { id } = req.params;
-    const { username, password, albums } = req.body;
-    const placeholders = albums.map(() => '?').join(',');
-    const sql = `UPDATE users SET username = ?, password = ?, album1 = ?, album2 = ?, album3 = ?, album4 = ?, album5 = ?, album6 = ?, album7 = ?, album8 = ?, album9 = ?, album10 = ? WHERE id = ?`;
+// Update a user (Change role)
+app.put('/users/:username', authenticateAdminToken, (req, res) => {
+    const { username, role } = req.body;
+    
+    
+    console.log(username);
+    console.log(role);
 
-    db.run(sql, [username, password, ...albums, id], function (err) {
+    const sql = `UPDATE users SET role = ? WHERE username = ?`;
+
+    db.run(sql, [role, username], function (err) {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
-        res.json({ updatedID: id });
+        res.json({ updatedUser: username, newRole: role });
     });
 });
 
@@ -393,7 +396,7 @@ app.post('/login', async (req, res) => {
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required.' });
     }
-    
+
     const sql = `SELECT password, role FROM users WHERE username = ?`;
     db.get(sql, [username], async (err, row) => {
         if (err || !row) {
@@ -404,9 +407,9 @@ app.post('/login', async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid username or password.' });
         }
-        
+
         const token = jwt.sign({ username, role: row.role }, process.env.SECRET, { expiresIn: '1h' }); // Use a strong secret key
-        res.json({ token, role: row.role }); 
+        res.json({ token, role: row.role });
     });
 });
 
@@ -550,7 +553,7 @@ app.post('/create-account', async (req, res) => {
 
 // Get a list of link-tokens: Used, Active or All
 app.get('/tokens/:username/:status', authenticateAdminToken, (req, res) => {
-    const { status } = req.params; 
+    const { status } = req.params;
 
     let query = 'SELECT * FROM tokens';
     const params = [];
