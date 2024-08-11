@@ -31,8 +31,6 @@ const authenticateToken = (req, res, next) => {
 const authenticateAdminToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1]; 
 
-    console.log (token)
-    console.log (req.params)
     
     if (!token) {
         return res.sendStatus(401);

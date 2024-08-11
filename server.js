@@ -103,10 +103,6 @@ app.delete('/users', (req, res) => {
 app.put('/users/:username', authenticateAdminToken, (req, res) => {
     const { username, role } = req.body;
     
-    
-    console.log(username);
-    console.log(role);
-
     const sql = `UPDATE users SET role = ? WHERE username = ?`;
 
     db.run(sql, [role, username], function (err) {
@@ -116,6 +112,48 @@ app.put('/users/:username', authenticateAdminToken, (req, res) => {
         res.json({ updatedUser: username, newRole: role });
     });
 });
+
+// Update a user (Change passw)
+
+app.put('/users/:username/password', authenticateToken, async (req, res) => {
+    const { username } = req.params;
+    const { oldPassword, newPassword } = req.body;
+    console.log(username, oldPassword, newPassword)
+
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ error: 'Old password and new password are required.' });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+    }
+
+    const sql = `SELECT password FROM users WHERE username = ?`;
+    db.get(sql, [username], async (err, row) => {
+        if (err || !row) {
+            return res.status(401).json({ error: 'Invalid username or password.' });
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, row.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid username or password.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const updateSql = `UPDATE users SET password = ? WHERE username = ?`;
+        db.run(updateSql, [hashedPassword, username], function (updateErr) {
+            if (updateErr) {
+                return res.status(400).json({ error: updateErr.message });
+            }
+
+            res.status(200).json({ message: 'Password updated successfully.' });
+        });
+    });
+});
+
+
 
 //User / Albums stuff
 // Add a album to a user (and add album to albums if needed)
