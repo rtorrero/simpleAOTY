@@ -36,6 +36,8 @@ const authenticateAdminToken = (req, res, next) => {
         return res.sendStatus(401);
     }
 
+    
+
     jwt.verify(token, process.env.SECRET, (err, user) => {
         if (err) {
             return res.sendStatus(403); 
@@ -81,7 +83,7 @@ const authenticateRAdminToken = (req, res, next) => {
         }
         
         if (req.user.role !== 'SUPERADMIN') {
-            console.log("User is not an RAdmin (.env)");
+            console.log("User is not an SuperAdmin");
             return res.sendStatus(403); // Forbidden
         }
 
