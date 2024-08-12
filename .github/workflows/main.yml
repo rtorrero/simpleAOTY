@@ -32,4 +32,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ghcr.io/rtorrero/simpleaoty/simpleaoty-backend:latest
+        tags: ghcr.io/rtorrero/simpleaoty/simpleaoty-backend:${{ github.ref_name }}
