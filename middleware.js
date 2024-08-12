@@ -50,7 +50,7 @@ const authenticateAdminToken = (req, res, next) => {
         }
         
         
-        if (req.user.role !== 'admin') {
+        if (req.user.role !== 'admin' && req.user.role !== 'SUPERADMIN' ) {
             console.log("User is not an admin");
             return res.sendStatus(403); // Forbidden
         }
@@ -80,7 +80,7 @@ const authenticateRAdminToken = (req, res, next) => {
             return res.sendStatus(403); // Forbidden
         }
         
-        if (req.user.role !== process.env.RADMIN) {
+        if (req.user.role !== 'SUPERADMIN') {
             console.log("User is not an RAdmin (.env)");
             return res.sendStatus(403); // Forbidden
         }

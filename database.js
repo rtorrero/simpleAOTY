@@ -36,7 +36,7 @@ const db = new sqlite3.Database(dbPath, async (err) => {
                         console.error(err.message);
                     } else if (row.count === 0) {
                         // Insert the initial user
-                        const role = process.env.RADMIN || 'superadmin'; 
+                        const role = 'SUPERADMIN'; 
                         const username = 'superadmin';
                         const password = 'superadmin'; 
 
@@ -46,7 +46,8 @@ const db = new sqlite3.Database(dbPath, async (err) => {
                                 if (err) {
                                     console.error(err.message);
                                 } else {
-                                    console.log('Initial user created: superadmin');
+                                    console.log('Initial user created: superadmin, password: superadmin. CHANGE PASSWORD ASAP!');
+                                    console.log('This user will be able to create users and change role to admin')
                                 }
                             });
                         } catch (hashError) {
