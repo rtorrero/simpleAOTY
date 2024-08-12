@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 
 // Control auth.
 
-const { authenticateAdminToken, authenticateToken } = require('./middleware');
+const { authenticateRAdminToken, authenticateAdminToken, authenticateToken } = require('./middleware');
 
 
 // Encrypt tokens for links. 
@@ -100,7 +100,7 @@ app.delete('/users', (req, res) => {
 });
 
 // Update a user (Change role)
-app.put('/users/:username', authenticateAdminToken, (req, res) => {
+app.put('/users/:username', authenticateRAdminToken, (req, res) => {
     const { username, role } = req.body;
     
     const sql = `UPDATE users SET role = ? WHERE username = ?`;
